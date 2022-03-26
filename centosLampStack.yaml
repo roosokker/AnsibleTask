@@ -1,0 +1,62 @@
+- hosts: lampstack
+  remote_user: root
+  become: yes
+  vars:
+    packages:
+      - httpd
+      - php
+      - mariadb-server
+      - firewalld
+    packageservices:
+      - httpd
+      - php-fpm
+      - mariadb
+      - firewalld
+    serviceports:
+      - 80
+      - 443
+  tasks:
+  - name: Installing Services for LampStack
+    yum:
+      name: "{{ item }}"
+    loop: "{{ packages }}"
+  
+  - name: Enabling Services
+    service:
+      name: "{{ item }}"
+      enabled: yes
+    loop: "{{ packageservices }}"
+
+  - name: Starting Services
+    service:
+      name: "{{ item }}"
+      state: started
+    loop: "{{ packageservices }}"
+
+  - name: Adding PHP File
+    shell:
+      cmd: 
+        touch /var/www/html/test.php
+        echo "Hello This is my Page using playbook" > /var/www/html/test.php
+    args:
+      executable: /bin/bash 
+
+  - name: FirewallD rules
+    firewalld:
+      permanent: yes
+      immediate: yes
+      port: "{{ item }}/tcp"
+      state: enabled
+    loop: "{{ serviceports }}"
+
+  - name: Testing The Page
+    uri:
+      url: https://3.215.177.122/test.php
+      method: GET
+      status_code: 200
+
+      
+    # with_items:
+    #   - {port: "80", proto: "tcp", state: "enabled", zone: "public" }
+    #   - {port: "443", proto: "tcp", state: "enabled", zone: "public" }
+  
