@@ -29,3 +29,5 @@ and the security groups too having the http and https permission
 so i couldn't test that the php file is hosted well
 but for the tasks it's worked well)
 
+to run the playbook
+ansible-playbook -i centosInventory.yaml centosLampStack.yaml
